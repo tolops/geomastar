@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # Browserless service for browser automation
+  browserless:
+    image: browserless/chrome:latest
+    container_name: geomaster-browserless
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      # Browserless configuration
+      - CONCURRENT=10
+      - TOKEN=your_browserless_token_here
+      - MAX_CONCURRENT_SESSIONS=10
+      - TIMEOUT=300000
+      - KEEP_ALIVE=true
+      # Chrome flags for better scraping
+      - DEFAULT_LAUNCH_ARGS=["--no-sandbox","--disable-setuid-sandbox","--disable-blink-features=AutomationControlled"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: geomaster-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=geomaster_bi
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=your_postgres_password_here
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend server
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: geomaster-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://postgres:your_postgres_password_here@postgres:5432/geomaster_bi
+      - BROWSERLESS_URL=ws://browserless:3000
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - EXA_API_KEY=${EXA_API_KEY}
+      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}
+    depends_on:
+      browserless:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
+  # Frontend client
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: geomaster-client
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    depends_on:
+      - server
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: geomaster-network

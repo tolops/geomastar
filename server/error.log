@@ -1,0 +1,6 @@
+Error: column "phase" of relation "searches" does not exist
+Stack: error: column "phase" of relation "searches" does not exist
+    at C:\Users\USER\geo\server\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async <anonymous> (C:\Users\USER\geo\server\node_modules\src\node-postgres\session.ts:65:19)
+    at async <anonymous> (C:\Users\USER\geo\server\src\routes\search.ts:21:26)

@@ -60,7 +60,7 @@ export class MapsScraper {
         }
     }
 
-    async searchLocation(location: string, retries = this.RETRY_ATTEMPTS) {
+    async searchLocation(location: string, retries = this.RETRY_ATTEMPTS): Promise<void> {
         if (!this.page) await this.init();
 
         try {
@@ -104,7 +104,7 @@ export class MapsScraper {
         }
     }
 
-    async searchKeywordsInArea(keyword: string, retries = this.RETRY_ATTEMPTS) {
+    async searchKeywordsInArea(keyword: string, retries = this.RETRY_ATTEMPTS): Promise<void> {
         if (!this.page) throw new Error('Page not initialized');
 
         try {

@@ -5,13 +5,13 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# FIX: Install ALL dependencies (including TypeScript) so we can build
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build TypeScript
+# Build TypeScript (This will work now)
 RUN npm run build
 
 # Expose port

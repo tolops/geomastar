@@ -10,20 +10,20 @@ router.get('/:searchId/export', async (req, res) => {
     const format = req.query.format || 'json';
 
     try {
-        const search = db.select().from(searches).where(eq(searches.id, Number(searchId))).get();
+        const [search] = await db.select().from(searches).where(eq(searches.id, Number(searchId)));
         if (!search) return res.status(404).json({ error: 'Search not found' });
 
-        const results = db.select().from(businesses).where(eq(businesses.searchId, Number(searchId))).all();
+        const results = await db.select().from(businesses).where(eq(businesses.searchId, Number(searchId)));
 
-        const fullData = await Promise.all(results.map(async (b) => {
-            const enrichment = db.select().from(enrichmentData).where(eq(enrichmentData.businessId, b.id)).all();
-            return { ...b, enrichment: enrichment.map(e => JSON.parse(e.data as string)) };
+        const fullData = await Promise.all(results.map(async (b: any) => {
+            const enrichment = await db.select().from(enrichmentData).where(eq(enrichmentData.businessId, b.id));
+            return { ...b, enrichment: enrichment.map((e: any) => JSON.parse(e.data as string)) };
         }));
 
         if (format === 'csv') {
             // Simple CSV generation
             const headers = ['Name', 'Address', 'Phone', 'Website', 'Emails', 'Socials', 'Sentiment', 'Confidence'];
-            const rows = fullData.map(b => {
+            const rows = fullData.map((b: any) => {
                 const emails = b.enrichment[0]?.emails?.join('; ') || '';
                 const socials = b.enrichment[0]?.socialProfiles?.join('; ') || '';
                 const sentiment = b.enrichment[0]?.sentiment || 'Neutral';
@@ -57,7 +57,7 @@ router.get('/:searchId/export', async (req, res) => {
             doc.fontSize(12).text(`Search ID: ${searchId}`, { align: 'center' });
             doc.moveDown();
 
-            fullData.forEach((b, i) => {
+            fullData.forEach((b: any, i: number) => {
                 const enrichment = b.enrichment[0] || {};
 
                 doc.fontSize(16).text(`${i + 1}. ${b.name}`);

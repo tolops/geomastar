@@ -103,7 +103,7 @@ router.put('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // Delete User (Admin only)
-router.delete('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.delete('/users/:id', authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
     try {
         const { id } = req.params;
 

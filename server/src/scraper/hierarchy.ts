@@ -174,7 +174,7 @@ export class HierarchyScraper {
             } catch (e) { }
 
             const elements = await page.$$eval('div[role="heading"][aria-level="3"], .w8qArf', els =>
-                els.map(e => e.innerText)
+                els.map(e => (e as HTMLElement).innerText)
             );
 
             return elements.map(text => ({ name: text, type: 'neighborhood' }));

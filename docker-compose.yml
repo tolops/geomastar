@@ -48,8 +48,8 @@ services:
       - EXA_API_KEY=${EXA_API_KEY}
       - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}
     depends_on:
-        - browserless
-        - postgres
+      - browserless
+      - postgres
         condition: service_healthy
       postgres:
         condition: service_healthy

@@ -64,7 +64,7 @@ export class DataAggregator {
             else if (score < 0) data.sentiment = 'Negative';
 
             // Boost confidence if we found news
-            if (data.newsMentions.length > 0) data.confidenceScore = Math.min((data.confidenceScore || 0.5) + 0.2, 1.0);
+            if (data.newsMentions && data.newsMentions.length > 0) data.confidenceScore = Math.min((data.confidenceScore || 0.5) + 0.2, 1.0);
         }
 
         // 3. Firecrawl for website scraping (if website exists)

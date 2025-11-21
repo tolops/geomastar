@@ -14,7 +14,7 @@ COPY . .
 # Build Vite app
 RUN npm run build
 
-# Install serve to run the built app
+# Install 'serve' to run the static files
 RUN npm install -g serve
 
 # Expose port

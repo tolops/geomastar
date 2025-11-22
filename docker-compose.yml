@@ -23,7 +23,7 @@ services:
       - PORT=3000
       # We use the ${DATABASE_URL} variable so Coolify injects the external DB string
       - 'DATABASE_URL=${DATABASE_URL}'
-      - 'BROWSERLESS_URL=ws://browserless:3000'
+      - 'BROWSERLESS_URL=https://geobrowse.dependifyllc.com'
       - 'TAVILY_API_KEY=${TAVILY_API_KEY}'
       - 'EXA_API_KEY=${EXA_API_KEY}'
       - 'FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}'

@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Browserless service
   browserless:
     image: 'browserless/chrome:latest'
     container_name: geomaster-browserless
@@ -14,49 +13,26 @@ services:
       - KEEP_ALIVE=true
       - 'DEFAULT_LAUNCH_ARGS=["--no-sandbox","--disable-setuid-sandbox","--disable-blink-features=AutomationControlled"]'
 
-  # PostgreSQL database
-  postgres:
-    image: postgres:15-alpine
-    container_name: geomaster-postgres
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=geomaster_bi
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=your_postgres_password_here
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Backend server
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
     container_name: geomaster-server
     restart: unless-stopped
-    # Ports removed to prevent "Port 3000 already allocated" error in Coolify
-    # Coolify handles the routing automatically via the Domain settings
     environment:
       - PORT=3000
-      - DATABASE_URL=postgres://postgres:your_postgres_password_here@postgres:5432/geomaster_bi
-      - BROWSERLESS_URL=ws://browserless:3000
-      - TAVILY_API_KEY=${TAVILY_API_KEY}
-      - EXA_API_KEY=${EXA_API_KEY}
-      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}
-    # FIXED SYNTAX BELOW
+      # We use the ${DATABASE_URL} variable so Coolify injects the external DB string
+      - 'DATABASE_URL=${DATABASE_URL}'
+      - 'BROWSERLESS_URL=ws://browserless:3000'
+      - 'TAVILY_API_KEY=${TAVILY_API_KEY}'
+      - 'EXA_API_KEY=${EXA_API_KEY}'
+      - 'FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}'
+      - 'OPENAI_API_KEY=${OPENAI_API_KEY}'
     depends_on:
+      # We only wait for browserless now, since Postgres is external
       browserless:
         condition: service_started
-      postgres:
-        condition: service_healthy
-    # Removed local development volumes for production stability
-    # This ensures the server uses the code we actually built in the Dockerfile
 
-  # Frontend client
   client:
     build:
       context: ./client
@@ -64,12 +40,10 @@ services:
     container_name: geomaster-client
     restart: unless-stopped
     environment:
-      - VITE_API_URL=http://localhost:3000 # Note: In prod, this might need to be your public domain
+      # Use the variable so the frontend knows where the backend lives on the internet
+      - 'VITE_API_URL=${VITE_API_URL}'
     depends_on:
       - server
-
-volumes:
-  postgres_data:
 
 networks:
   default:
